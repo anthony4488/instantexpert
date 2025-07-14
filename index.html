@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstantExpert.io - Get Expert Help in 30 Seconds</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 120px 0 80px;
+            text-align: center;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .hero-content p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        /* How It Works */
+        .how-it-works {
+            background: white;
+            padding: 80px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .step {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        /* Categories */
+        .categories {
+            background: #f8f9fa;
+            padding: 80px 0;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .category-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .category-card h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        /* Booking Flow */
+        .booking-container {
+            background: white;
+            padding: 80px 0;
+            display: none;
+        }
+
+        .booking-step {
+            display: none;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .booking-step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .expert-card {
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .expert-card:hover,
+        .expert-card.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .expert-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .expert-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .next-btn,
+        .back-btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-right: 1rem;
+        }
+
+        .next-btn:hover,
+        .back-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .back-btn {
+            background: #6c757d;
+        }
+
+        #stripe-card-element {
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .steps {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo">InstantExpert.io</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#categories">Categories</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Get Expert Help in 30 Seconds</h1>
+                <p>Connect with verified experts instantly. Business advice, tech support, legal help, and more.</p>
+                <button class="cta-button" onclick="startBooking()">Get Expert Help Now</button>
+                <div style="margin-top: 2rem; opacity: 0.8;">
+                    <p>💡 15-minute video calls • 🚀 30-second matching • ⭐ 4.9/5 rating</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">1</div>
+                    <h3>Describe Your Problem</h3>
+                    <p>Tell us what kind of expert help you need in just a few words</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">2</div>
+                    <h3>Get Matched Instantly</h3>
+                    <p>Our AI finds the perfect expert for your specific needs in under 30 seconds</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">3</div>
+                    <h3>Start Video Call</h3>
+                    <p>Jump on a video call immediately and get your problem solved</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">4</div>
+                    <h3>Pay for Time Used</h3>
+                    <p>Only pay for the minutes you use. No subscriptions or hidden fees</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section id="categories" class="categories">
+        <div class="container">
+            <h2 class="section-title">Expert Categories</h2>
+            <div class="category-grid">
+                <div class="category-card" onclick="selectCategory('business')">
+                    <h3>💼 Business Strategy</h3>
+                    <p>Marketing, fundraising, operations, growth strategy</p>
+                    <small>$8-12/minute</small>
+                </div>
+                <div class="category-card" onclick="selectCategory('tech')">
+                    <h3>💻 Tech & Programming</h3>
+                    <p>Coding, debugging, system architecture, cybersecurity</p>
+                    <small>$6-10/minute</small>
+                </div>
+                <div class="category-card" onclick="selectCategory('legal')">
+                    <h3>⚖️ Legal & Finance</h3>
+                    <p>Contracts, taxes, compliance, investment advice</p>
+                    <small>$10-15/minute</small>
+                </div>
+                <div class="category-card" onclick="selectCategory('career')">
+                    <h3>🚀 Career Development</h3>
+                    <p>Interview prep, resume review, career transitions</p>
+                    <small>$4-8/minute</small>
+                </div>
+                <div class="category-card" onclick="selectCategory('creative')">
+                    <h3>🎨 Creative & Marketing</h3>
+                    <p>Design, branding, content strategy, social media</p>
+                    <small>$5-9/minute</small>
+                </div>
+                <div class="category-card" onclick="selectCategory('health')">
+                    <h3>🏥 Health & Wellness</h3>
+                    <p>Nutrition, fitness, mental health, medical questions</p>
+                    <small>$6-12/minute</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Flow -->
+    <section class="booking-container">
+        <div class="container">
+            <!-- Step 1: Problem Description -->
+            <div id="step-1" class="booking-step active">
+                <h2>What do you need help with?</h2>
+                <form id="problem-form">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="">Select a category</option>
+                            <option value="business">Business Strategy</option>
+                            <option value="tech">Tech & Programming</option>
+                            <option value="legal">Legal & Finance</option>
+                            <option value="career">Career Development</option>
+                            <option value="creative">Creative & Marketing</option>
+                            <option value="health">Health & Wellness</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="problem">Describe your problem</label>
+                        <textarea id="problem" rows="4" placeholder="e.g., I need help creating a marketing strategy for my new SaaS product..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="urgency">How urgent is this?</label>
+                        <select id="urgency" required>
+                            <option value="">Select urgency</option>
+                            <option value="immediate">Immediate (next 5 minutes)</option>
+                            <option value="today">Today (within 2 hours)</option>
+                            <option value="soon">Soon (within 24 hours)</option>
+                        </select>
+                    </div>
+                    <button type="button" class="next-btn" onclick="findExperts()">Find Experts</button>
+                </form>
+            </div>
+
+            <!-- Step 2: Expert Selection -->
+            <div id="step-2" class="booking-step">
+                <h2>Choose Your Expert</h2>
+                <div id="experts-list">
+                    <!-- Expert cards will be populated here -->
+                </div>
+                <button type="button" class="back-btn" onclick="goToStep(1)">Back</button>
+                <button type="button" class="next-btn" onclick="goToPayment()">Continue to Payment</button>
+            </div>
+
+            <!-- Step 3: Payment -->
+            <div id="step-3" class="booking-step">
+                <h2>Payment Information</h2>
+                <div id="booking-summary" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                    <!-- Booking summary will be populated here -->
+                </div>
+                <form id="payment-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Card Information</label>
+                        <div id="stripe-card-element"></div>
+                    </div>
+                    <div id="card-errors" role="alert" style="color: #dc3545; margin-top: 0.5rem;"></div>
+                    <button type="button" class="back-btn" onclick="goToStep(2)">Back</button>
+                    <button type="submit" class="next-btn" id="submit-payment">
+                        <span id="button-text">Complete Booking</span>
+                        <span id="spinner" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 4: Confirmation -->
+            <div id="step-4" class="booking-step">
+                <h2>🎉 Booking Confirmed!</h2>
+                <div id="confirmation-details">
+                    <!-- Confirmation details will be populated here -->
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="cta-button" onclick="joinCall()">Join Video Call</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 InstantExpert.io - Get expert help instantly</p>
+        </div>
+    </footer>
+
+    <script>
+        // Stripe initialization
+        const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLISHABLE_KEY'); // Replace with your actual key
+        const elements = stripe.elements();
+        let cardElement;
+
+        // Global variables
+        let currentStep = 1;
+        let selectedExpert = null;
+        let bookingData = {};
+
+        // Initialize Stripe card element
+        function initializeStripe() {
+            const style = {
+                base: {
+                    fontSize: '16px',
+                    color: '#333',
+                    '::placeholder': {
+                        color: '#aab7c4',
+                    },
+                },
+            };
+
+            cardElement = elements.create('card', {style: style});
+            cardElement.mount('#stripe-card-element');
+
+            cardElement.on('change', ({error}) => {
+                const displayError = document.getElementById('card-errors');
+                if (error) {
+                    displayError.textContent = error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+        }
+
+        // Start booking process
+        function startBooking() {
+            document.querySelector('.hero').style.display = 'none';
+            document.querySelector('.how-it-works').style.display = 'none';
+            document.querySelector('.categories').style.display = 'none';
+            document.querySelector('.booking-container').style.display = 'block';
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Category selection
+        function selectCategory(category) {
+            document.getElementById('category').value = category;
+            startBooking();
+        }
+
+        // Find experts based on problem description
+        function findExperts() {
+            const category = document.getElementById('category').value;
+            const problem = document.getElementById('problem').value;
+            const urgency = document.getElementById('urgency').value;
+
+            if (!category || !problem || !urgency) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Store booking data
+            bookingData = { category, problem, urgency };
+
+            // Simulate AI matching (replace with actual API call)
+            const experts = getMatchedExperts(category);
+            displayExperts(experts);
+            goToStep(2);
+        }
+
+        // Simulate expert matching
+        function getMatchedExperts(category) {
+            const expertData = {
+                business: [
+                    { id: 1, name: 'Sarah Chen', title: 'Ex-McKinsey Partner', rating: 4.9, rate: 12, experience: '15 years strategy consulting', avatar: 'SC' },
+                    { id: 2, name: 'Marcus Johnson', title: 'Serial Entrepreneur', rating: 4.8, rate: 10, experience: '3 successful exits', avatar: 'MJ' }
+                ],
+                tech: [
+                    { id: 3, name: 'Alex Kumar', title: 'Senior Developer', rating: 4.9, rate: 8, experience: 'Google, Meta, 10+ years', avatar: 'AK' },
+                    { id: 4, name: 'Lisa Wang', title: 'CTO', rating: 4.7, rate: 15, experience: 'Led teams of 50+', avatar: 'LW' }
+                ],
+                legal: [
+                    { id: 5, name: 'David Miller', title: 'Corporate Lawyer', rating: 4.8, rate: 18, experience: 'BigLaw, 12 years', avatar: 'DM' },
+                    { id: 6, name: 'Rachel Green', title: 'Tax Specialist', rating: 4.9, rate: 14, experience: 'CPA, Tax Attorney', avatar: 'RG' }
+                ],
+                career: [
+                    { id: 7, name: 'Jennifer Lee', title: 'Executive Coach', rating: 4.8, rate: 6, experience: 'Fortune 500 HR', avatar: 'JL' },
+                    { id: 8, name: 'Tom Rodriguez', title: 'Recruiter', rating: 4.7, rate: 5, experience: 'Tech recruiting expert', avatar: 'TR' }
+                ],
+                creative: [
+                    { id: 9, name: 'Emma Thompson', title: 'Brand Strategist', rating: 4.9, rate: 9, experience: 'Nike, Apple campaigns', avatar: 'ET' },
+                    { id: 10, name: 'Carlos Mendez', title: 'Creative Director', rating: 4.8, rate: 7, experience: 'Award-winning designer', avatar: 'CM' }
+                ],
+                health: [
+                    { id: 11, name: 'Dr. Amy Foster', title: 'Wellness Coach', rating: 4.9, rate: 12, experience: 'MD, Nutrition specialist', avatar: 'AF' },
+                    { id: 12, name: 'Mike Chen', title: 'Fitness Expert', rating: 4.7, rate: 8, experience: 'Olympic trainer', avatar: 'MC' }
+                ]
+            };
+
+            return expertData[category] || [];
+        }
+
+        // Display experts
+        function displayExperts(experts) {
+            const container = document.getElementById('experts-list');
+            container.innerHTML = '';
+
+            experts.forEach(expert => {
+                const expertCard = document.createElement('div');
+                expertCard.className = 'expert-card';
+                expertCard.onclick = () => selectExpert(expert);
+                
+                expertCard.innerHTML = `
+                    <div class="expert-info">
+                        <div class="expert-avatar">${expert.avatar}</div>
+                        <div>
+                            <h4>${expert.name}</h4>
+                            <p>${expert.title}</p>
+                            <p><small>${expert.experience}</small></p>
+                            <p><strong>$${expert.rate}/min</strong> • ⭐ ${expert.rating}</p>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(expertCard);
+            });
+        }
+
+        // Select expert
+        function selectExpert(expert) {
+            // Remove previous selection
+            document.querySelectorAll('.expert-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            event.currentTarget.classList.add('selected');
+            selectedExpert = expert;
+        }
+
+        // Go to payment
+        function goToPayment() {
+            if (!selectedExpert) {
+                alert('Please select an expert');
+                return;
+            }
+
+            // Display booking summary
+            const summary = document.getElementById('booking-summary');
+            summary.innerHTML = `
+                <h4>Booking Summary</h4>
+                <p><strong>Expert:</strong> ${selectedExpert.name}</p>
+                <p><strong>Category:</strong> ${bookingData.category}</p>
+                <p><strong>Rate:</strong> $${selectedExpert.rate}/minute</p>
+                <p><strong>Estimated Duration:</strong> 15 minutes</p>
+                <p><strong>Estimated Total:</strong> $${selectedExpert.rate * 15}</p>
+                <small>*You'll only be charged for actual time used</small>
+            `;
+
+            // Initialize Stripe if not already done
+            if (!cardElement) {
+                initializeStripe();
+            }
+
+            goToStep(3);
+        }
+
+        // Handle payment form submission
+        document.getElementById('payment-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const submitButton = document.getElementById('submit-payment');
+            const buttonText = document.getElementById('button-text');
+            const spinner = document.getElementById('spinner');
+            
+            submitButton.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+
+            const {token, error} = await stripe.createToken(cardElement);
+
+            if (error) {
+                document.getElementById('card-errors').textContent = error.message;
+                submitButton.disabled = false;
+                buttonText.style.display = 'inline-block';
+                spinner.style.display = 'none';
+            } else {
+                // Submit token to your server
+                submitPayment(token);
+            }
+        });
+
+        // Submit payment to server
+        async function submitPayment(token) {
+            try {
+                // This would be your actual API call
+                const response = await fetch('/api/create-booking', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: token.id,
+                        expert: selectedExpert,
+                        problem: bookingData.problem,
+                        email: document.getElementById('email').value
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showConfirmation(result.booking);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                alert('Payment failed: ' + error.message);
+                document.getElementById('submit-payment').disabled = false;
+                document.getElementById('button-text').style.display = 'inline-block';
+                document.getElementById('spinner').style.display = 'none';
+            }
+        }
+
+        // Show confirmation
+        function showConfirmation(booking) {
+            const details = document.getElementById('confirmation-details');
+            details.innerHTML = `
+                <div style="text-align: center;">
+                    <p><strong>Your expert call is ready!</strong></p>
+                    <p>Expert: ${selectedExpert.name}</p>
+                    <p>Booking ID: ${booking?.id || 'IE-' + Date.now()}</p>
+                    <p>A confirmation email has been sent to ${document.getElementById('email').value}</p>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <p><strong>Zoom Meeting Details:</strong></p>
+                        <p>Meeting ID: ${booking?.zoomId || '123-456-789'}</p>
+                        <p>Password: ${booking?.zoomPassword || 'InstantExpert'}</p>
+                    </div>
+                </div>
+            `;
+            goToStep(4);
+        }
+
+        // Join video call
+        function joinCall() {
+            // This would redirect to Zoom or open the video call
+            window.open('https://zoom.us/j/1234567890?pwd=InstantExpert', '_blank');
+        }
+
+        // Navigation between steps
+        function goToStep(step) {
+            document.querySelectorAll('.booking-step').forEach(stepDiv => {
+                stepDiv.classList.remove('active');
+            });
+            document.getElementById(`step-${step}`).classList.add('active');
+            currentStep = step;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Any initialization code goes here
+        });
+
+        // Calendly integration (if you want to use it as backup)
+        function openCalendly() {
+            // This would open Calendly widget
+            window.open('https://calendly.com/your-calendly-link', '_blank');
+        }
+    </script>
+
+    <!-- Calendly Integration (Optional) -->
+    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js"></script>
+</body>
+</html>
